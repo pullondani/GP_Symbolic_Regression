@@ -24,11 +24,17 @@ xVals, yVals = readFile()
 
 
 def evaluate(individual, points):
+    # func = toolbox.compile(expr=individual)
+    # err = 0.
+    # for i, x in enumerate(points):
+    #     err += abs(func(x) - yVals[i])
+    # return err / len(points),
+
     func = toolbox.compile(expr=individual)
-    err = 0.
-    for i, x in enumerate(points):
-        err += abs(func(x) - yVals[i])
-    return err / len(points),
+    # Evaluate the mean squared error between the expression
+    # and the real function : x**4 + x**3 + x**2 + x
+    sqerrors = ((func(x) - x**4 - x**3 - x**2 - x)**2 for x in points)
+    return math.fsum(sqerrors) / len(points),
 
 
 def protectedDiv(left, right):
@@ -44,13 +50,17 @@ def protectedDiv(left, right):
 pset = gp.PrimitiveSet("MAIN", arity=1)
 pset.addPrimitive(operator.add, 2)
 pset.addPrimitive(operator.sub, 2)
-pset.addPrimitive(operator.mul, 2)
-pset.addPrimitive(protectedDiv, 2)
-pset.addPrimitive(operator.neg, 1)
-pset.addPrimitive(math.sin, 1)
+# pset.addPrimitive(operator.mul, 2)
+# pset.addPrimitive(protectedDiv, 2)
+# pset.addPrimitive(operator.neg, 1)
+# pset.addPrimitive(math.sin, 1)
+# pset.addPrimitive(operator.gt, 2)
+# pset.addPrimitive(operator.lt, 2)
+# pset.addPrimitive(operator.eq, 2)
 # pset.addPrimitive(operator.pow, 2)
 
-# pset.addTerminal(2.)
+# pset.addTerminal(1.)
+pset.addTerminal(2.)
 pset.addTerminal(3.)
 
 pset.renameArguments(ARG0="x")
@@ -68,7 +78,7 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("compile", gp.compile, pset=pset)
 
 toolbox.register("evaluate", evaluate, points=xVals)
-toolbox.register("select", tools.selTournament, tournsize=3)
+toolbox.register("select", tools.selTournament, tournsize=10)
 toolbox.register("mate", gp.cxOnePoint)
 toolbox.register("expr_mut", gp.genFull, min_=2, max_=6)
 toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
@@ -92,7 +102,10 @@ locals = {
     'protectedDiv': protectedDiv,
     'mul': lambda x, y: x*y,
     'add': lambda x, y: x + y,
-    'neg': lambda x: -x
+    'neg': lambda x: -x,
+    # 'gt': lambda x, y: str(x) + '>' + str(y),
+    # 'lt': lambda x, y: str(x) + '<' + str(y),
+    # 'eq': lambda x, y: str(x) + '=='  + str(y),
 }
 
 
@@ -110,13 +123,13 @@ def main():
     mstats.register("min", numpy.min)
     mstats.register("max", numpy.max)
 
-    CXPB, MUTPB, NGEN = 0.9, 0.1, 50
+    CXPB, MUTPB, NGEN = 0.85, 0.15, 50
     pop, log = algorithms.eaSimple(
         pop, toolbox, CXPB, MUTPB, NGEN, stats=mstats, halloffame=hof, verbose=True)
     frmt = sympify(str(hof[0]), locals=locals)
     print(hof[0])
     print(f'simplified: {frmt}')
-    print('Average Error Per Input', evaluate(hof[0], points=xVals)[0])
+    print('Average Error Per Input', evaluate(hof[0], points=[x/10. for x in range(-10,10)])[0])
 
     return pop, log, hof
 

@@ -1,7 +1,8 @@
 import math
 import csv
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
+## Function to create data for the GP to try and match
 def f1(inp):
     out = []
     for x in inp:
@@ -15,7 +16,7 @@ def f1(inp):
 
 
 def writeTo(inp, out):
-    with open('data.txt', 'w') as f:
+    with open('data.txt', 'w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['x', 'y'])
         for i, d in enumerate(inp):
@@ -25,10 +26,12 @@ def writeTo(inp, out):
 
 
 def main():
-    inp = [x/100 for x in range(0, 1000, 25)]
+    # Step size and number of data points
+    inp = [x/100 for x in range(-500, 1000, 25)]
     out = f1(inp)
 
     writeTo(inp, out)
+    print('Job done.')
 
     # plt.plot(inp, out, label='Function Output')
     # plt.legend()
